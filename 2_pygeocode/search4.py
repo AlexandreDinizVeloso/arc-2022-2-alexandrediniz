@@ -2,6 +2,7 @@
 import socket
 import ssl
 from urllib.parse import quote_plus
+import json
 
 request_text = """\
 GET /search?q={}&format=json HTTP/1.1\r\n\
@@ -24,8 +25,16 @@ def geocode(address):
         if not more:
             break
         raw_reply += more
-    print(raw_reply.decode('utf-8'))
+    reply = raw_reply.decode('utf-8')
+    reply = reply[reply.find('['):]
+    return json.loads(reply[:reply.find(reply[-1])])
 
 
 if __name__ == '__main__':
-    geocode('Belarmino Vilela Junqueira, Ituiutaba, MG')
+    address = 'Belarmino Vilela Junqueira, Ituiutaba, MG'
+    reply = geocode(address)
+    print('Endereço buscado: {0}\n'.format(address))
+    for i in range(len(reply)):
+        print('\tResultado {0}:\n'.format(str(i + 1)))
+        print('\t\tCEP: {0}\n'.format(reply[i]['display_name'].split(', ')[-2]))
+        print('\t\t(Latitude, Longitude): ({0}, {1})\n'.format(str(reply[i]['lat']), str(reply[i]['lon'])))
